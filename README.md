@@ -16,6 +16,21 @@ Finally, move the printer's .jar from [releases](https://github.com/aleksilassil
 
 ---
 
+## v1.0.1 — rootNode 修正（2026-09-27）
+
+本版本接續 v1.0.0-beta，**修復 preprocess 插件 rootNode 指向**，使專案建置以 **26.3** 為根版本。
+
+### 本次修改
+- **rootNode 由 26.2 修正為 26.3**：將被 git 追蹤的 `versions/mainProject` 內容由 `26.2` 改為 `26.3`，preprocess 插件據此決定根節點，已驗證建置輸出 `rootNode: 26.3`。
+- 移除誤建於 repo 根目錄的多餘 `mainProject` 檔。
+
+### 待完善事項
+- **多版本共同建置（`gradlew build`）仍受限**：`build` 的 `check` 階段會觸發全部舊版本（1.18.2～26.2）的 `preprocessCode`，而此專案的 preprocess 插件（`com.replaymod.preprocess:c5abb4fb12`）在目前環境下對非根版本是「複製」而非「剝離標記」，導致舊版本編譯到 26.3 專用代碼而失敗。此問題為既有（影響所有舊版本，非 26.3 升級所造成）。
+- **26.3 標準建置**：請使用 `gradlew :26.3:jar`（或 `:26.3:assemble`），可乾淨產出 26.3 jar。
+- 破基岩運作前提：生存模式 + 效率Ⅴ鎬 + 急迫Ⅱ + 材料（活塞×2、紅石火把×1、黏液塊×1）。
+
+---
+
 ## v1.0.0-beta — Minecraft 26.3 版（2026-09-26）
 
 本版本為適配 **Minecraft 26.3 / Fabric Loader 0.19.5 / Fabric API 0.161.0** 的測試版本，由 `zhaixianyu/litematica-printer` 主分支（v2.4 / 26.2）升級而來。
@@ -36,8 +51,8 @@ Finally, move the printer's .jar from [releases](https://github.com/aleksilassil
 - 視窗刷新率改用 `getActiveVideoMode().getRefreshRate()`
 
 ### 待完善事項
-- **preprocess 插件 rootNode 仍停在 26.2**，導致多版本共同建置（`gradlew build`）會連帶觸發 26.2 編譯並失敗；26.3 單版本建置 `gradlew :26.3:jar` 正常。
-- 替換模式「水換成沙子/沙礫」需在 26.3 環境再次確認（本版為 zhaixianyu 原生實作）。
+- ~~preprocess 插件 rootNode 仍停在 26.2~~ → 已於 **v1.0.1** 修正為 26.3（見上方 v1.0.1 區段）。
+- 替換模式「水換成沙子/沙礫」需在 26.3 環境再次確認（本版為 zhaixianyu 原生實作）→ 已於 26.3 實測通過。
 - 破基岩運作前提：生存模式 + 效率Ⅴ鎬 + 急迫Ⅱ + 材料（活塞×2、紅石火把×1、黏液塊×1）。
 
 ---
