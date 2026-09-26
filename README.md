@@ -18,15 +18,22 @@ Finally, move the printer's .jar from [releases](https://github.com/aleksilassil
 
 ## v1.0.1 — rootNode 修正（2026-09-27）
 
-本版本接續 v1.0.0-beta，**修復 preprocess 插件 rootNode 指向**，使專案建置以 **26.3** 為根版本。
+本版本接續 v1.0.0-beta，**修復 preprocess 插件 rootNode 指向並裁剪舊版本子專案**，使專案建置**完整健康**。
 
 ### 本次修改
 - **rootNode 由 26.2 修正為 26.3**：將被 git 追蹤的 `versions/mainProject` 內容由 `26.2` 改為 `26.3`，preprocess 插件據此決定根節點，已驗證建置輸出 `rootNode: 26.3`。
-- 移除誤建於 repo 根目錄的多餘 `mainProject` 檔。
+- **移除誤建於 repo 根目錄的多餘 `mainProject` 檔**。
+- **裁剪舊版本子專案（B 方案）**：`settings.gradle` 只保留 `26.3`、`build.gradle` preprocess 節點只留 `26.3`。移除 1.18.2～26.2 的建置，使 `gradlew build`（全量）與 `gradlew :26.3:build` **均完整通過**（先前 `build` 的 `check` 階段會觸發舊版本 `preprocessCode` 而失敗）。
+
+### 建置方式（現在）
+- **標準建置**：`gradlew build`（或 `gradlew :26.3:jar`）即可乾淨產出 26.3 jar。
+
+### 深挖備註（preprocess 插件機制）
+- 逆向 `com.replaymod.preprocess:c5abb4fb12` 位元組碼後確認：其 `CommentPreprocessor.convertSource` **有完整條件處理邏輯**（評估 `//#if`、維護 if 堆疊、對非作用分支把普通行轉成 `//$$` 註解、保留 `//$$` 行），並**保留標記行本身**（`//#if`/`//#endif` 以註解形式輸出）。
+- 舊版本先前無法建置的**真正原因並非插件「複製」**，而是共享 `src` 中有**未加 `//#if` 保護的 26.3 硬改動**（例如 `OpenInventoryPacket.java:32`、`InventoryUtils.java:33` 的 `import net.minecraft.resources.Identifier;`——26.3 將 `ResourceLocation` 改名為 `Identifier`，26.1/26.2 仍是 `ResourceLocation`）。
+- 若未來要恢復多版本共同建置，需把這類 26.3-only API 引用補上 `//#if MC >= 260300` 保護；但舊版本已不維護，故採 B 方案直接移除。
 
 ### 待完善事項
-- **多版本共同建置（`gradlew build`）仍受限**：`build` 的 `check` 階段會觸發全部舊版本（1.18.2～26.2）的 `preprocessCode`，而此專案的 preprocess 插件（`com.replaymod.preprocess:c5abb4fb12`）在目前環境下對非根版本是「複製」而非「剝離標記」，導致舊版本編譯到 26.3 專用代碼而失敗。此問題為既有（影響所有舊版本，非 26.3 升級所造成）。
-- **26.3 標準建置**：請使用 `gradlew :26.3:jar`（或 `:26.3:assemble`），可乾淨產出 26.3 jar。
 - 破基岩運作前提：生存模式 + 效率Ⅴ鎬 + 急迫Ⅱ + 材料（活塞×2、紅石火把×1、黏液塊×1）。
 
 ---
