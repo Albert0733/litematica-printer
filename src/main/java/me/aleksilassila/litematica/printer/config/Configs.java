@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.aleksilassila.litematica.printer.LitematicaMixinMod.*;
-import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.loadChestTracker;
-import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.loadQuickShulker;
 
 public class Configs implements IConfigHandler {
     public static Configs INSTANCE = new Configs();
@@ -27,8 +25,6 @@ public class Configs implements IConfigHandler {
 
     public static ImmutableList<IConfigBase> addGeneral(){
         List<IConfigBase> list = new ArrayList<>();
-        if(loadChestTracker) list.add(INVENTORY_CONFIG);
-        if(loadQuickShulker) list.add(QUICKSHULKER);
         list.add(PRINT_TIMEOUT);
         list.add(PRINT_INTERVAL);
 //        list.add(PRINTING_RANGE);
@@ -91,7 +87,6 @@ public class Configs implements IConfigHandler {
             list.add(REPLACE_BLOCK);
         }
         list.add(CLOSE_ALL_MODE);
-        list.add(SYNC_INVENTORY_CONFIG);
         if(FabricLoader.getInstance().isDevelopmentEnvironment()) list.add(TEST);
         if(FabricLoader.getInstance().isDevelopmentEnvironment()) list.add(TEST1);
 
@@ -110,19 +105,8 @@ public class Configs implements IConfigHandler {
     public static ImmutableList<ConfigHotkey> addKeyList(){
         ArrayList<ConfigHotkey> list = new ArrayList<>();
         list.add(PRINTER);
-        list.add(SYNC_INVENTORY);
         list.add(SWITCH_PRINTER_MODE);
 
-
-		if(loadChestTracker){
-            list.add(PRINTER_INVENTORY);
-            list.add(REMOVE_PRINT_INVENTORY);
-            //#if MC >= 12001
-            list.add(LAST);
-            list.add(NEXT);
-            list.add(DELETE);
-            //#endif
-        }
         if(FabricLoader.getInstance().isDevelopmentEnvironment()) list.add(TEST);
         return ImmutableList.copyOf(list);
     }
@@ -130,7 +114,6 @@ public class Configs implements IConfigHandler {
     public static ImmutableList<IHotkeyTogglable> addSwitchKey(){
         ArrayList<IHotkeyTogglable> list = new ArrayList<>();
         list.add(TOGGLE_PRINTING_MODE);
-        list.add(SYNC_INVENTORY_CHECK);
         list.add(BEDROCK_SWITCH);
         list.add(EXCAVATE);
         list.add(REPLACE_BLOCK);

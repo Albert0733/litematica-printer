@@ -32,21 +32,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.resources.Identifier;
 
-//#if MC > 11904
-import me.aleksilassila.litematica.printer.printer.zxy.chesttracker.MemoryUtils;
-import me.aleksilassila.litematica.printer.printer.zxy.chesttracker.SearchItem;
-import net.minecraft.world.phys.AABB;
-import red.jackf.chesttracker.api.providers.InteractionTracker;
-//#else
-//$$     import me.aleksilassila.litematica.printer.printer.zxy.memory.Memory;
-//$$     import me.aleksilassila.litematica.printer.printer.zxy.memory.MemoryDatabase;
-//$$     import me.aleksilassila.litematica.printer.printer.zxy.memory.MemoryUtils;
-//#if MC > 11902
-//$$ import net.minecraft.core.registries.Registries;
-//#else
-//#endif
-//#endif
-
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -54,7 +39,6 @@ import java.util.LinkedHashSet;
 
 import static me.aleksilassila.litematica.printer.LitematicaMixinMod.PRINT_CHECK;
 import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.closeScreen;
-import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.loadChestTracker;
 import static me.aleksilassila.litematica.printer.printer.zxy.Utils.ZxyUtils.client;
 import static me.aleksilassila.litematica.printer.printer.zxy.inventory.OpenInventoryPacket.openIng;
 
@@ -109,44 +93,6 @@ public class InventoryUtils {
             }
             if (LitematicaMixinMod.QUICKSHULKER.getBooleanValue() && openShulker(remoteItem)) {
                 return true;
-            } else if (LitematicaMixinMod.INVENTORY.getBooleanValue()) {
-                for (Item item : remoteItem) {
-                    //#if MC >= 12001
-                    //#if MC > 12004
-                    MemoryUtils.currentMemoryKey = client.level.dimension().identifier();
-                    //#else
-                    //$$ MemoryUtils.currentMemoryKey = client.level.dimensionTypeId().location();
-                    //#endif
-                    MemoryUtils.itemStack = new ItemStack(item);
-                    if (SearchItem.search(true)) {
-                        closeScreen++;
-                        isOpenHandler = true;
-                        Printer.printerMemorySync = true;
-                        return true;
-                    }
-                    //#else
-                    //$$
-                    //$$    MemoryDatabase database = MemoryDatabase.getCurrent();
-                    //$$    if (database != null) {
-                    //$$        for (ResourceLocation dimension : database.getDimensions()) {
-                    //$$            for (Memory memory : database.findItems(item.getDefaultInstance(), dimension)) {
-                    //$$                MemoryUtils.setLatestPos(memory.getPosition());
-                                   //#if MC > 11902
-                                   //$$ OpenInventoryPacket.sendOpenInventory(memory.getPosition(), ResourceKey.create(Registries.DIMENSION, dimension));
-                                   //#else
-                                   //$$ OpenInventoryPacket.sendOpenInventory(memory.getPosition(), ResourceKey.create(Registry.DIMENSION_REGISTRY, dimension));
-                                   //#endif
-                    //$$                if(closeScreen == 0)closeScreen++;
-                    //$$                Printer.printerMemorySync = true;
-                    //$$                isOpenHandler = true;
-                    //$$                return true;
-                    //$$            }
-                    //$$        }
-                    //$$    }
-                    //#endif
-                }
-                remoteItem = new LinkedHashSet<>();
-                isOpenHandler = false;
             }
         }
         return false;
@@ -299,9 +245,6 @@ public class InventoryUtils {
                         try {
                             shulkerBoxSlot = i;
 //                            ClientUtil.CheckAndSend(stack,i);
-                            //#if MC >= 12001
-                            if (loadChestTracker) InteractionTracker.INSTANCE.clear();
-                            //#endif
                             method.invoke(method, stack, i);
                             closeScreen++;
                             isOpenHandler = true;

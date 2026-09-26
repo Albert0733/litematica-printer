@@ -14,6 +14,34 @@ Finally, move the printer's .jar from [releases](https://github.com/aleksilassil
 
 ![Demo](printer_demo.gif)
 
+---
+
+## v1.0.0-beta — Minecraft 26.3 版（2026-09-26）
+
+本版本為適配 **Minecraft 26.3 / Fabric Loader 0.19.5 / Fabric API 0.161.0** 的測試版本，由 `zhaixianyu/litematica-printer` 主分支（v2.4 / 26.2）升級而來。
+
+### 本次修改（本次升級所做）
+- **移除無法升級到 26.3 的卡點依賴**：chest-tracker(port)、where-is-it(port)、jackfredlib、searchables（這些 mod 尚未提供 26.3 版本）。
+- **摘除 3 項非優先功能**：遠程容器記憶、找物品、容器同步；**Quick Shulker 保留**。
+- **完整保留特殊打印模式**：挖掘（ExcavateMode）、替換（ReplaceMode）、破基岩（bedrockminer）——**均已在 26.3 實測通過**。
+
+### 26.3 API 適配（因應 26.3 大幅重構）
+- `ResourceLocation` → `net.minecraft.resources.Identifier`
+- `DirtPathBlock` → `PathBlock`；`RedStoneWireBlock` → `RedstoneWireBlock`
+- `AxeItem` / `AxeItemAccessor` 移除 → 改用自建 strippables 映射
+- `blocksMotion()` → `isSolid()`
+- `swinging` 欄位 → `isSwinging()`
+- `VertexFormat` / `GpuBufferSlice` → `com.mojang.renderpearl.*`
+- malilib `onRenderWorldLast` 改為 7 參數（移除 `Matrix4fc`）
+- 視窗刷新率改用 `getActiveVideoMode().getRefreshRate()`
+
+### 待完善事項
+- **preprocess 插件 rootNode 仍停在 26.2**，導致多版本共同建置（`gradlew build`）會連帶觸發 26.2 編譯並失敗；26.3 單版本建置 `gradlew :26.3:jar` 正常。
+- 替換模式「水換成沙子/沙礫」需在 26.3 環境再次確認（本版為 zhaixianyu 原生實作）。
+- 破基岩運作前提：生存模式 + 效率Ⅴ鎬 + 急迫Ⅱ + 材料（活塞×2、紅石火把×1、黏液塊×1）。
+
+---
+
 How To Use
 ----------
 Using the printer is straightforward: You can toggle the feature by pressing `CAPS_LOCK` by default. To configure variables such as

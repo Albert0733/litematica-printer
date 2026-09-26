@@ -75,7 +75,8 @@ public class PrintWater {
         //$$ b = material.isLiquid();
         //#endif
 
-        if (material.blocksMotion() || b) {
+        // isSolid() 取代 blocksMotion()（26.3 改名；isSolid 在各版本皆存在）
+        if (material.isSolid() || b) {
             return true;
         }else {
             Messager.actionBar("冰碎后无法产生水");

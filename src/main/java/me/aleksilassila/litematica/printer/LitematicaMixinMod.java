@@ -17,12 +17,8 @@ import me.aleksilassila.litematica.printer.printer.zxy.Utils.HighlightBlockRende
 import me.aleksilassila.litematica.printer.printer.zxy.inventory.OpenInventoryPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
-//#if MC >= 12001
-import me.aleksilassila.litematica.printer.printer.zxy.chesttracker.MemoryUtils;
-//#endif
 import java.util.List;
 
-import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.loadChestTracker;
 import static me.aleksilassila.litematica.printer.printer.zxy.Utils.Statistics.loadQuickShulker;
 
 public class LitematicaMixinMod implements ModInitializer, ClientModInitializer {
@@ -53,12 +49,6 @@ public class LitematicaMixinMod implements ModInitializer, ClientModInitializer 
 	public static final ConfigBooleanHotkeyed EXCAVATE = new ConfigBooleanHotkeyed("挖掘", false,"", "挖掘所选区内的方块");
 	public static final ConfigBooleanHotkeyed REPLACE_BLOCK = new ConfigBooleanHotkeyed("替换", false,"", "替换方块，通过\"替换方块名单\"配置");
 	public static final ConfigHotkey CLOSE_ALL_MODE = new ConfigHotkey("关闭全部模式", "LEFT_CONTROL,G","关闭全部模式，若此时为单模模式将模式恢复为打印");
-
-	//#if MC >= 12001
-	public static final ConfigHotkey LAST = new ConfigHotkey("上一个容器", "",GUI_NO_ORDER,"");
-	public static final ConfigHotkey NEXT = new ConfigHotkey("下一个容器", "",GUI_NO_ORDER,"");
-	public static final ConfigHotkey DELETE = new ConfigHotkey("删除当前容器", "",GUI_NO_ORDER,"");
-	//#endif
 
 	public static final ConfigStringList FLUID_BLOCK_LIST = new ConfigStringList("替换方块名单", ImmutableList.of("minecraft:water|minecraft:lava => minecraft:sand|minecraft:gravel","//all=>minecraft:air"), "更改后需关闭打印机一次才会使用新的名单。\n格式：要替换的方块 => 替换成什么方块，多个用|分隔，//表示忽略。\n破坏方块受挖掘模式同等限制");
 	public static final ConfigBoolean PUT_SKIP = new ConfigBoolean("跳过放置", false, "开启后会跳过列表内的方块");
@@ -103,12 +93,6 @@ public class LitematicaMixinMod implements ModInitializer, ClientModInitializer 
 	public static final ConfigHotkey PRINT = new ConfigHotkey("打印", "", KeybindSettings.PRESS_ALLOWEXTRA_EMPTY, "按下时打印机开始工作，松开时停止");
 	public static final ConfigBooleanHotkeyed TOGGLE_PRINTING_MODE =
 			new ConfigBooleanHotkeyed("打印机开关", false,"CAPS_LOCK", KeybindSettings.PRESS_ALLOWEXTRA_EMPTY, "控制打印机是否工作","打印机开关");
-	public static final ConfigHotkey SYNC_INVENTORY = new ConfigHotkey("容器同步", "", "按下热键后会记录看向容器的物品。\n将投影选区内的同类型容器中的物品，同步至记录的容器。");
-	public static final ConfigBooleanHotkeyed SYNC_INVENTORY_CHECK = new ConfigBooleanHotkeyed("同步时检查背包", false,"", "容器同步时检查背包，如果填充物不足，则不会打开容器");
-	public static final ConfigHotkey PRINTER_INVENTORY= new ConfigHotkey("打印机库存", "", "如果远程取物的目标是未加载的区块将会增加取物品的时间，用投影选区后按下热键\n" +
-			"打印机工作时将会使用该库存内的物品\n" +
-			"建议库存区域内放置假人来常加载区块");
-	public static final ConfigHotkey REMOVE_PRINT_INVENTORY = new ConfigHotkey("清空打印机库存", "", "清空打印机库存");
 
 	public static List<IConfigBase> getHotkeyList() {
 		List<IConfigBase> list = new java.util.ArrayList<>(Hotkeys.HOTKEY_LIST);
@@ -121,17 +105,8 @@ public class LitematicaMixinMod implements ModInitializer, ClientModInitializer 
 		}
 		return ImmutableList.copyOf(list);
 	}
-	public static final ConfigColor SYNC_INVENTORY_COLOR = new ConfigColor("容器同步与打印机添加库存高亮颜色","#4CFF4CE6", "");
-	public static final SuperConfig INVENTORY_CONFIG = new SuperConfig(INVENTORY, AUTO_INVENTORY,PRINT_CHECK,INVENTORY_LIST,PRINTER_INVENTORY,REMOVE_PRINT_INVENTORY
-			//#if MC >= 12001
-			,LAST,NEXT,DELETE
-			//#endif
-	);
-	public static final SuperConfig SYNC_INVENTORY_CONFIG = new SuperConfig(SYNC_INVENTORY,SYNC_INVENTORY_CHECK,SYNC_INVENTORY_COLOR);
 	public static ImmutableList<IConfigBase> getColorsList() {
-		List<IConfigBase> list = new java.util.ArrayList<>();
-		list.add(SYNC_INVENTORY_COLOR);
-		return ImmutableList.copyOf(list);
+		return ImmutableList.of();
 	}
 
 	@Override
@@ -140,11 +115,6 @@ public class LitematicaMixinMod implements ModInitializer, ClientModInitializer 
 		OpenInventoryPacket.init();
 		OpenInventoryPacket.registerReceivePacket();
 		OpenInventoryPacket.registerClientReceivePacket();
-		//#if MC >= 12001
-		if(loadChestTracker) MemoryUtils.setup();
-		//#endif
-
-//		}
 		me.aleksilassila.litematica.printer.config.Configs.init();
 		HighlightBlockRenderer.init();
 	}
@@ -154,10 +124,6 @@ public class LitematicaMixinMod implements ModInitializer, ClientModInitializer 
 		
 	}
 	private void reSetConfig(){
-		if(!loadChestTracker){
-			AUTO_INVENTORY.setBooleanValue(false);
-			INVENTORY.setBooleanValue(false);
-		}
 		if(!loadQuickShulker){
 			QUICKSHULKER.setBooleanValue(false);
 		}

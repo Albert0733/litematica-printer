@@ -35,13 +35,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 
-//#if MC >= 12001
-import me.aleksilassila.litematica.printer.printer.zxy.chesttracker.MemoryUtils;
-import net.minecraft.world.phys.Vec3;
-import red.jackf.chesttracker.api.providers.InteractionTracker;
-import red.jackf.chesttracker.impl.memory.MemoryBankAccessImpl;
-//#endif
-
 //#if MC < 11904
 //$$ // import net.minecraft.util.registry.Registry;
 //#else
@@ -312,11 +305,6 @@ public class OpenInventoryPacket {
         //先置空，避免箱子追踪库存在奇妙的状态保存
         OpenInventoryPacket.pos = null;
         OpenInventoryPacket.key = null;
-        //避免箱子追踪重复保存，
-        //#if MC >= 12001
-        //避免箱子追踪胡乱记录，若不清空，则会吧打开容器前右键的方块视为目标容器
-        InteractionTracker.INSTANCE.clear();
-        //#endif
         if (client.player != null && !client.player.containerMenu.equals(client.player.inventoryMenu))
             client.player.closeContainer();
         openIng = true;
@@ -349,9 +337,6 @@ public class OpenInventoryPacket {
             return;
         }
         if (open) {
-            //#if MC >= 12001
-            MemoryUtils.blockState = state;
-            //#endif
         } else {
             if (key != null) {
                 //#if MC < 11904
@@ -363,13 +348,6 @@ public class OpenInventoryPacket {
                 String translate = StringUtils.translate(translationKey);
                 Messager.chat("打开容器失败 \n位于"+ translate+"  "+pos.toShortString());
 
-                //#if MC >= 12001
-                MemoryUtils.PRINTER_MEMORY.removeMemory(key.identifier(), pos);
-                MemoryBankAccessImpl.INSTANCE.getLoadedInternal().ifPresent(memoryBank -> memoryBank.removeMemory(key.identifier(),pos));
-                //#else
-                //$$ red.jackf.chesttracker.memory.MemoryDatabase.getCurrent().removePos(key.location() , pos);
-                //$$ me.aleksilassila.litematica.printer.printer.zxy.memory.MemoryDatabase.getCurrent().removePos(key.location() , pos);
-                //#endif
             }
             if (Minecraft.getInstance().player != null) {
                 Minecraft.getInstance().player.closeContainer();

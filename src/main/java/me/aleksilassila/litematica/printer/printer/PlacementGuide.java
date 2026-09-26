@@ -9,7 +9,6 @@ import me.aleksilassila.litematica.printer.interfaces.Implementation;
 import me.aleksilassila.litematica.printer.mixin.FlowerPotBlockAccessor;
 import me.aleksilassila.litematica.printer.printer.zxy.Utils.PlayerAction;
 import me.aleksilassila.litematica.printer.printer.zxy.inventory.SwitchItem;
-import net.fabricmc.fabric.mixin.content.registry.AxeItemAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -19,6 +18,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,6 +42,27 @@ public class PlacementGuide extends PrinterUtils {
     @NotNull
     protected final Minecraft client;
     public static long createPortalTick = 1;
+
+    // 剝皮方塊↔原木 雙向查表（26.3 起 Fabric API 移除 AxeItemAccessor，改用 registry 名稱規則）
+    private static Map<Block, Block> STRIPPABLES = null;
+    private static Map<Block, Block> getStrippables() {
+        if (STRIPPABLES == null) {
+            STRIPPABLES = new HashMap<>();
+            for (Block block : BuiltInRegistries.BLOCK) {
+                String path = BuiltInRegistries.BLOCK.getKey(block).getPath();
+                if (path.startsWith("stripped_")) {
+                    String logName = path.substring("stripped_".length());
+                    for (Block candidate : BuiltInRegistries.BLOCK) {
+                        if (BuiltInRegistries.BLOCK.getKey(candidate).getPath().equals(logName)) {
+                            STRIPPABLES.put(candidate, block);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return STRIPPABLES;
+    }
 
     public PlacementGuide(@NotNull Minecraft client) {
         this.client = client;
@@ -210,12 +231,12 @@ public class PlacementGuide extends PrinterUtils {
                     Action action = new Action().setSides(requiredState.getValue(RotatedPillarBlock.AXIS));
 
                     // If is stripped log && should use normal log instead
-                    if (AxeItemAccessor.getStrippables().containsValue(requiredState.getBlock()) &&
+                    if (getStrippables().containsValue(requiredState.getBlock()) &&
                             LitematicaMixinMod.STRIP_LOGS.getBooleanValue()) {
                         Block stripped = requiredState.getBlock();
 
-                        for (Block log : AxeItemAccessor.getStrippables().keySet()) {
-                            if (AxeItemAccessor.getStrippables().get(log) != stripped) continue;
+                        for (Block log : getStrippables().keySet()) {
+                            if (getStrippables().get(log) != stripped) continue;
 
                             if (!playerHasAccessToItem(client.player, stripped.asItem()) &&
                                     playerHasAccessToItem(client.player, log.asItem())) {
@@ -560,7 +581,7 @@ public class PlacementGuide extends PrinterUtils {
                     break;
                 }
                 case PILLAR: {
-                    Block stripped = AxeItemAccessor.getStrippables().get(currentState.getBlock());
+                    Block stripped = getStrippables().get(currentState.getBlock());
                     if (stripped != null && stripped == requiredState.getBlock()) {
                         return new ClickAction().setItems(Implementation.AXES);
                     }
@@ -812,7 +833,7 @@ public class PlacementGuide extends PrinterUtils {
         public void sendQueue(LocalPlayer player) {
             if (target == null || hitModifier == null) return;
 
-            boolean wasSneaking = player.swinging;
+            boolean wasSneaking = player.isSwinging();
 
             Direction direction = side.getAxis() == Direction.Axis.Y ?
                     ((lookDirection == null || !lookDirection.getAxis().isHorizontal())
@@ -926,7 +947,11 @@ public class PlacementGuide extends PrinterUtils {
 
         // Other
         FARMLAND(FarmlandBlock.class),
-        DIRT_PATH(DirtPathBlock.class),
+        //#if MC >= 260300
+        DIRT_PATH(PathBlock.class),
+        //#else
+        //$$ DIRT_PATH(DirtPathBlock.class),
+        //#endif
         SKIP(SkullBlock.class, GrindstoneBlock.class, SignBlock.class, VineBlock.class,EndPortalBlock.class),
         FLUID(LiquidBlock.class),
         DEFAULT;
